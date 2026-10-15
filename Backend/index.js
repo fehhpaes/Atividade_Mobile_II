@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const methodOverride = require('method-override');
@@ -8,7 +9,7 @@ const Conteudo = require('./models/Conteudo');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/atividade_mobile';
+const MONGO_URI = process.env.MONGO_URI;
 
 // ===================================
 // Middlewares
