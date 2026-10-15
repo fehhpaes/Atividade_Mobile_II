@@ -1,0 +1,26 @@
+npm install react-native-paper
+npm install react-native-safe-area-context
+
+PaperProvider	Configura o Paper
+Appbar	Barra superior
+Appbar.Action	Botão/menu
+Appbar.Content	Título
+Button	Abas e botão NEXT
+Card	Card das séries
+Text	Textos
+FAB	Botão flutuante
+
+
+{/*      <Stack.Navigator
+          screenOptions={{
+            headerShown: false,
+          }}
+        >
+          <Stack.Screen name="Home" component={AppBar} />
+          <Stack.Screen name="Pesquisa" component={Pesquisa} />
+          <Stack.Screen name="Acesso" component={Acesso} />
+          <Stack.Screen name="Login" component={Login} />
+          <Stack.Screen name="Cadastro" component={Cadastro} />
+        </Stack.Navigator>
+
+    */}
