@@ -32,7 +32,7 @@ const UsuarioSchema = new mongoose.Schema(
     },
     isAdmin: {
       type: Boolean,
-      default: true, // Por padrão, usuários cadastrados podem acessar a área admin nesta atividade
+      default: true,
     },
   },
   {
