@@ -25,47 +25,13 @@ app.use(methodOverride('_method'));
 // ===================================
 mongoose
   .connect(MONGO_URI)
-  .then(async () => {
+  .then(() => {
     console.log(' Conectado com sucesso ao MongoDB:', MONGO_URI);
-    await popularDadosIniciais();
   })
   .catch((err) => {
     console.warn(' Aviso: Não foi possível conectar ao MongoDB:', err.message);
     console.warn('   (Certifique-se de iniciar o serviço do MongoDB para persistir dados)');
   });
-
-// Seed inicial para garantir que o app tenha conteúdos ao abrir
-async function popularDadosIniciais() {
-  try {
-    const total = await Conteudo.countDocuments();
-    if (total === 0) {
-      console.log(' Inicializando dados padrão de conteúdos no MongoDB...');
-      await Conteudo.create([
-        {
-          titulo: 'Breaking Bad',
-          subtitulo: '1x01 - Pilot',
-          imagem: 'https://picsum.photos/seed/breakingbad/700/400',
-          descricao: 'Um professor de química diagnosticado com câncer começa a fabricar metanfetamina para garantir o futuro de sua família.',
-        },
-        {
-          titulo: 'Stranger Things',
-          subtitulo: '1x01 - O Desaparecimento de Will Byers',
-          imagem: 'https://picsum.photos/seed/stranger/700/400',
-          descricao: 'Em uma pequena cidade, um garoto desaparece e seus amigos encontram uma garota com poderes telecinéticos.',
-        },
-        {
-          titulo: 'Dark',
-          subtitulo: '1x01 - Segredos',
-          imagem: 'https://picsum.photos/seed/dark/700/400',
-          descricao: 'O desaparecimento de crianças em uma cidade alemã expõe segredos sombrios entre quatro famílias.',
-        },
-      ]);
-      console.log(' Dados iniciais inseridos com sucesso!');
-    }
-  } catch (error) {
-    console.error(' Erro ao verificar ou popular dados iniciais:', error.message);
-  }
-}
 
 // ===================================
 // Rota de Healthcheck
@@ -80,7 +46,7 @@ app.get('/', (req, res) => {
 });
 
 // ===================================
-// REQUISITO 1: Cadastro de Usuário
+// Cadastro de Usuário
 // ===================================
 app.post('/api/auth/cadastro', async (req, res) => {
   try {
@@ -99,7 +65,7 @@ app.post('/api/auth/cadastro', async (req, res) => {
     const novoUsuario = await Usuario.create({
       nome,
       email: email.toLowerCase(),
-      senha, // em produção usar bcrypt para hash
+      senha,
       telefone: telefone || '',
       cpf: cpf || '',
       isAdmin: true,
@@ -124,7 +90,7 @@ app.post('/api/auth/cadastro', async (req, res) => {
 });
 
 // ===================================
-// REQUISITO 2: Login
+// Login
 // ===================================
 app.post('/api/auth/login', async (req, res) => {
   try {
@@ -163,7 +129,7 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // ===================================
-// REQUISITO 3: Identificação e Perfil do Usuário
+// Identificação e Perfil do Usuário
 // ===================================
 app.get('/api/usuarios/:id', async (req, res) => {
   try {
@@ -209,13 +175,19 @@ app.put('/api/usuarios/:id', async (req, res) => {
 });
 
 // ===================================
-// REQUISITO 4: Conteúdos (Listagem Pública e Cadastro Admin)
+// Conteúdos (Listagem Pública e Cadastro Admin)
 // ===================================
 
-// Listar todos os conteúdos (público)
+// Listar todos os conteúdos (público) - aceita filtro opcional por categoria (categoria=FILMES)
 app.get('/api/conteudos', async (req, res) => {
   try {
-    const conteudos = await Conteudo.find().sort({ createdAt: -1 });
+    const { categoria } = req.query;
+    const filtro = {};
+    if (categoria && categoria.trim() && categoria.toUpperCase() !== 'TODOS') {
+      filtro.categoria = new RegExp(`^${categoria.trim()}$`, 'i');
+    }
+
+    const conteudos = await Conteudo.find(filtro).sort({ createdAt: -1 });
     return res.json(conteudos);
   } catch (err) {
     console.error('Erro ao buscar conteúdos:', err);
@@ -226,7 +198,7 @@ app.get('/api/conteudos', async (req, res) => {
 // Cadastrar novo conteúdo (Área Administrativa)
 app.post('/api/conteudos', async (req, res) => {
   try {
-    const { titulo, subtitulo, imagem, descricao, usuarioId } = req.body;
+    const { titulo, subtitulo, imagem, descricao, categoria, usuarioId } = req.body;
 
     if (!titulo || !imagem) {
       return res.status(400).json({ erro: 'Título e imagem são obrigatórios.' });
@@ -237,6 +209,7 @@ app.post('/api/conteudos', async (req, res) => {
       subtitulo: subtitulo || '',
       imagem,
       descricao: descricao || '',
+      categoria: categoria || 'SÉRIES',
       criadoPor: usuarioId || null,
     });
 
@@ -251,19 +224,20 @@ app.post('/api/conteudos', async (req, res) => {
 });
 
 // ===================================
-// REQUISITO 5: Gerenciamento de Imagens (Editar e Excluir Conteúdo/Imagem)
+// Gerenciamento de Imagens (Editar e Excluir Conteúdo/Imagem)
 // ===================================
 
 // Editar conteúdo ou imagem (Apenas autenticado)
 app.put('/api/conteudos/:id', async (req, res) => {
   try {
-    const { titulo, subtitulo, imagem, descricao } = req.body;
+    const { titulo, subtitulo, imagem, descricao, categoria } = req.body;
     const updateData = {};
 
     if (titulo) updateData.titulo = titulo;
     if (subtitulo !== undefined) updateData.subtitulo = subtitulo;
     if (imagem) updateData.imagem = imagem;
     if (descricao !== undefined) updateData.descricao = descricao;
+    if (categoria) updateData.categoria = categoria;
 
     const conteudoAtualizado = await Conteudo.findByIdAndUpdate(
       req.params.id,
@@ -305,7 +279,7 @@ app.delete('/api/conteudos/:id', async (req, res) => {
 });
 
 // ===================================
-// REQUISITO 6: Pesquisa por termo
+// Pesquisa por termo
 // ===================================
 app.get('/api/conteudos/pesquisa', async (req, res) => {
   try {

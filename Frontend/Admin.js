@@ -10,11 +10,14 @@ import {
   Dialog,
   IconButton,
   ActivityIndicator,
+  Chip,
 } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
 import { styles } from './css/Styles';
 import { useAuth } from './AuthContext';
 import { API_URL } from './api';
+
+const CATEGORIAS = ['SÉRIES', 'FILMES', 'DOCUMENTÁRIOS', 'LANÇAMENTOS'];
 
 const Admin = ({ navigation }) => {
   const { usuario, autenticado } = useAuth();
@@ -24,6 +27,7 @@ const Admin = ({ navigation }) => {
   const [subtitulo, setSubtitulo] = useState('');
   const [descricao, setDescricao] = useState('');
   const [imagem, setImagem] = useState('');
+  const [categoria, setCategoria] = useState('SÉRIES');
 
   // Estados de listagem e controle
   const [conteudos, setConteudos] = useState([]);
@@ -35,7 +39,9 @@ const Admin = ({ navigation }) => {
   const [itemEditando, setItemEditando] = useState(null);
   const [editTitulo, setEditTitulo] = useState('');
   const [editSubtitulo, setEditSubtitulo] = useState('');
+  const [editDescricao, setEditDescricao] = useState('');
   const [editImagem, setEditImagem] = useState('');
+  const [editCategoria, setEditCategoria] = useState('SÉRIES');
 
   useEffect(() => {
     carregarConteudos();
@@ -98,6 +104,7 @@ const Admin = ({ navigation }) => {
           subtitulo,
           descricao,
           imagem,
+          categoria,
           usuarioId: usuario?.id,
         }),
       });
@@ -109,6 +116,7 @@ const Admin = ({ navigation }) => {
         setSubtitulo('');
         setDescricao('');
         setImagem('');
+        setCategoria('SÉRIES');
         carregarConteudos();
       } else {
         alert(data.erro || 'Falha ao cadastrar conteúdo.');
@@ -125,7 +133,9 @@ const Admin = ({ navigation }) => {
     setItemEditando(item);
     setEditTitulo(item.titulo);
     setEditSubtitulo(item.subtitulo || '');
+    setEditDescricao(item.descricao || '');
     setEditImagem(item.imagem);
+    setEditCategoria(item.categoria || 'SÉRIES');
     setDialogEdicao(true);
   };
 
@@ -141,7 +151,9 @@ const Admin = ({ navigation }) => {
         body: JSON.stringify({
           titulo: editTitulo,
           subtitulo: editSubtitulo,
+          descricao: editDescricao,
           imagem: editImagem,
+          categoria: editCategoria,
         }),
       });
 
@@ -232,6 +244,32 @@ const Admin = ({ navigation }) => {
             style={{ marginBottom: 10 }}
           />
 
+          <Text style={{ fontWeight: 'bold', marginTop: 5, marginBottom: 6, color: '#444' }}>
+            Categoria:
+          </Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
+            {CATEGORIAS.map((cat) => {
+              const selecionado = categoria === cat;
+              return (
+                <Chip
+                  key={cat}
+                  selected={selecionado}
+                  onPress={() => setCategoria(cat)}
+                  style={{
+                    marginRight: 8,
+                    backgroundColor: selecionado ? '#eda73e' : '#e8e8e8',
+                  }}
+                  textStyle={{
+                    color: selecionado ? '#FFFFFF' : '#333333',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  {cat}
+                </Chip>
+              );
+            })}
+          </ScrollView>
+
           <TextInput
             label="URL da Imagem *"
             placeholder="https://exemplo.com/imagem.jpg"
@@ -281,7 +319,11 @@ const Admin = ({ navigation }) => {
         ) : (
           conteudos.map((item) => (
             <Card key={item._id} style={{ marginBottom: 15, backgroundColor: '#FFFFFF' }}>
-              <Card.Title title={item.titulo} subtitle={item.subtitulo} />
+              <Card.Title
+                title={item.titulo}
+                subtitle={`${item.subtitulo ? item.subtitulo + ' • ' : ''}${item.categoria || 'SÉRIES'}`}
+                subtitleStyle={{ color: '#eda73e', fontWeight: 'bold' }}
+              />
               <Card.Cover source={{ uri: item.imagem }} style={{ height: 180 }} />
               <Card.Actions style={{ justifyContent: 'space-between' }}>
                 <Text variant="bodySmall" style={{ color: '#777', flex: 1 }} numberOfLines={1}>
@@ -326,6 +368,31 @@ const Admin = ({ navigation }) => {
               mode="outlined"
               style={{ marginBottom: 10 }}
             />
+            <Text style={{ fontWeight: 'bold', marginTop: 5, marginBottom: 6, color: '#444' }}>
+              Categoria:
+            </Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
+              {CATEGORIAS.map((cat) => {
+                const selecionado = editCategoria === cat;
+                return (
+                  <Chip
+                    key={cat}
+                    selected={selecionado}
+                    onPress={() => setEditCategoria(cat)}
+                    style={{
+                      marginRight: 8,
+                      backgroundColor: selecionado ? '#eda73e' : '#e8e8e8',
+                    }}
+                    textStyle={{
+                      color: selecionado ? '#FFFFFF' : '#333333',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    {cat}
+                  </Chip>
+                );
+              })}
+            </ScrollView>
             <TextInput
               label="URL da Imagem"
               value={editImagem}
@@ -337,10 +404,20 @@ const Admin = ({ navigation }) => {
               mode="outlined"
               icon="image"
               onPress={() => escolherImagemGaleria(true)}
-              style={{ marginTop: 5 }}
+              style={{ marginBottom: 10 }}
             >
               Trocar Foto da Galeria
             </Button>
+            <TextInput
+              label="Descrição"
+              placeholder="Sinopse do conteúdo"
+              value={editDescricao}
+              onChangeText={setEditDescricao}
+              mode="outlined"
+              multiline
+              numberOfLines={3}
+              style={{ marginBottom: 10 }}
+            />
           </Dialog.Content>
           <Dialog.Actions>
             <Button onPress={() => setDialogEdicao(false)}>Cancelar</Button>

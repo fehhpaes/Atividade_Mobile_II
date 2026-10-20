@@ -20,6 +20,11 @@ const ConteudoSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    categoria: {
+      type: String,
+      default: 'SÉRIES',
+      trim: true,
+    },
     criadoPor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Usuario',
