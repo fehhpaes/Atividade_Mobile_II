@@ -4,7 +4,8 @@ import { Platform } from 'react-native';
 // DICA: No celular físico com Expo Go, use o IP da sua máquina na rede local (ex: 192.168.0.14)
 // No emulador Android, você pode usar 10.0.2.2 ou o IP da rede local.
 // Na web, localhost funciona diretamente.
-const LOCAL_IP = '192.168.0.10';
+const LOCAL_IP = '10.237.79.3';
+//const LOCAL_IP = '192.168.0.10';
 
 export const API_URL = Platform.select({
   web: 'http://localhost:3000',
