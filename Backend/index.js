@@ -38,7 +38,7 @@ mongoose
 // ===================================
 app.get('/', (req, res) => {
   res.json({
-    mensagem: 'API Atividade Mobile está ativa com Express!',
+    mensagem: 'API Atividade Mobile está ativa!',
     status: 'online',
     bancoConectado: mongoose.connection.readyState === 1,
     timestamp: new Date(),
