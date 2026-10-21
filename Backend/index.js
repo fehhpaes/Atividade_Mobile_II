@@ -15,9 +15,9 @@ const MONGO_URI = process.env.MONGO_URI;
 // Middlewares
 // ===================================
 app.use(cors());
-// Limite ampliado para permitir fotos em base64 se enviadas pelo app
+// Essencial para ler as requisições do emulador e permitir fotos em base64:
 app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
 app.use(methodOverride('_method'));
 
 // ===================================
